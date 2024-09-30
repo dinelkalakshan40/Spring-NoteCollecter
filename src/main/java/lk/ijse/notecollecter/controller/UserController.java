@@ -1,14 +1,15 @@
 package lk.ijse.notecollecter.controller;
 
-import lk.ijse.notecollecter.customStatusCodes.SelectedUserErrorStatus;
+import lk.ijse.notecollecter.customStatusCodes.SelectedUserAndNoteErrorStatus;
 import lk.ijse.notecollecter.dto.UserStatus;
 import lk.ijse.notecollecter.dto.impl.UserDTO;
+import lk.ijse.notecollecter.exception.UserNotFoundException;
 import lk.ijse.notecollecter.service.UserService;
-import lk.ijse.notecollecter.service.UserServiceIMPL;
 import lk.ijse.notecollecter.util.AppUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -62,15 +63,29 @@ public class UserController {
         Pattern regexPattern = Pattern.compile(regexForUserID);
         var regexMatcher = regexPattern.matcher(userId);
         if(!regexMatcher.matches()){
-            return new SelectedUserErrorStatus(1,"User ID is not valid");
+            return new SelectedUserAndNoteErrorStatus(1,"User ID is not valid");
         }
         return userService.getUser(userId);
     }
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(value = "/{userId}")
-    public void deleteUser(@PathVariable("userId") String userId){
-
-        userService.deleteUser(userId);
+    public ResponseEntity<Void> deleteUser(@PathVariable("userId") String userId){
+        String regexForUserID = "^USER-[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$";
+        Pattern regexPattern = Pattern.compile(regexForUserID);
+        var regexMatcher = regexPattern.matcher(userId);
+        try {
+            if(!regexMatcher.matches()){
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+            userService.deleteUser(userId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }catch (UserNotFoundException e){
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<UserDTO> getAllUsers(){

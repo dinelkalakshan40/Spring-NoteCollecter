@@ -1,7 +1,7 @@
 package lk.ijse.notecollecter.service;
 
 import jakarta.transaction.Transactional;
-import lk.ijse.notecollecter.customStatusCodes.SelectedUserErrorStatus;
+import lk.ijse.notecollecter.customStatusCodes.SelectedUserAndNoteErrorStatus;
 import lk.ijse.notecollecter.dao.UserDao;
 import lk.ijse.notecollecter.dto.UserStatus;
 import lk.ijse.notecollecter.dto.impl.UserDTO;
@@ -37,7 +37,7 @@ public class UserServiceIMPL implements UserService{
             UserEntity selectedUser =userDao.getReferenceById(userId);
             return mapping.toUserDTO(selectedUser);
         }else {
-            return new SelectedUserErrorStatus(2,"User with id " + userId + " not found");
+            return new SelectedUserAndNoteErrorStatus(2,"User with id " + userId + " not found");
         }
     }
 
