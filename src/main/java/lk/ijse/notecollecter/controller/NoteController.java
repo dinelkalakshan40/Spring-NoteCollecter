@@ -4,6 +4,7 @@ import lk.ijse.notecollecter.customStatusCodes.SelectedUserAndNoteErrorStatus;
 import lk.ijse.notecollecter.dto.NoteStatus;
 import lk.ijse.notecollecter.dto.impl.NoteDTO;
 import lk.ijse.notecollecter.exception.DataPersistException;
+import lk.ijse.notecollecter.exception.NoteNotFoundException;
 import lk.ijse.notecollecter.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -47,6 +48,23 @@ public class NoteController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<NoteDTO> getALlNotes(){
         return noteService.getAllNotes();
+    }
+    @DeleteMapping(value = "/{noteId}")
+    public ResponseEntity<Void> deleteNote(@PathVariable ("noteId") String noteId){
+        String regexForUserID = "^NOTE-[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$";
+        Pattern regexPattern = Pattern.compile(regexForUserID);
+        var regexMatcher = regexPattern.matcher(noteId);
+        try {
+            if (!regexMatcher.matches()) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+            noteService.deleteNote(noteId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }catch (NoteNotFoundException e){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 
