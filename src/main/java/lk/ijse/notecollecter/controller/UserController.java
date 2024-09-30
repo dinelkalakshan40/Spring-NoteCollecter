@@ -1,5 +1,7 @@
 package lk.ijse.notecollecter.controller;
 
+import lk.ijse.notecollecter.customStatusCodes.SelectedUserErrorStatus;
+import lk.ijse.notecollecter.dto.UserStatus;
 import lk.ijse.notecollecter.dto.impl.UserDTO;
 import lk.ijse.notecollecter.service.UserService;
 import lk.ijse.notecollecter.service.UserServiceIMPL;
@@ -50,11 +52,14 @@ public class UserController {
         userService.saveUser(buildUserDTO);
         return buildUserDTO;
 
-
     }
 
+
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public UserDTO getSelectedUser(@PathVariable("userId") String userId){
+    public UserStatus getSelectedUser(@PathVariable("userId") String userId){
+        if (userId.isEmpty() || userId==null){
+            return new SelectedUserErrorStatus(1,"User ID is not valid");
+        }
         return userService.getUser(userId);
     }
     @ResponseStatus(HttpStatus.NO_CONTENT)
